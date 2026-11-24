@@ -65,7 +65,7 @@ function packedPackage(t: { after: (fn: () => void) => void }, prefix: string): 
   assert.equal(runRules(join(dir, 'poc.yaml'), false).code, 0);
   assert.equal(runPdf(dir, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   return dir;
 }
 
@@ -77,7 +77,7 @@ test('a foreign file stops pack, and the previous build stands untouched', pdfTe
   mkdirSync(join(packDir, 'Visio'));
   writeFileSync(join(packDir, 'Visio', 'l1.vsdx'), 'visio');
   writeFileSync(join(packDir, 'README.txt'), 'чужой файл');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 1, out);
   assert.ok(out.includes('SD-K02') && out.includes('README.txt'), out);
@@ -94,7 +94,7 @@ test('a sheet of an older build under схемы/ is pack output, not a foreign 
   const dir = packedPackage(t, 'sd-pack-oldsheet-');
   const sheetDir = join(packetDirOf(dir), 'схемы');
   writeFileSync(join(sheetDir, 'Лист из прежнего состава__L3-3.drawio'), '<mxfile/>');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 0, 'the previous build is pack' + "'" + 's own output: ' + out);
   assert.ok(!existsSync(join(sheetDir, 'Лист из прежнего состава__L3-3.drawio')), 'the rebuild drops it whole');
@@ -105,7 +105,7 @@ test('the packet path taken by a plain file is a clean refusal, never a crash', 
   const packDir = packetDirOf(dir);
   rmSync(packDir, { recursive: true });
   writeFileSync(packDir, 'не папка');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 2, out);
   assert.ok(readFileSync(packDir, 'utf8') === 'не папка', 'the skill does not remove foreign things');
@@ -123,6 +123,7 @@ test('a sheet rewritten mid-build is refused by hash, and the old packet stays w
   const oldBytes = readFileSync(join(packDir, 'схемы', PACKET_NAMES[0] as string));
   let fired = false;
   const result = runPack(dir, {
+    withLetter: true,
     beforeSheetCopy: (file: string): void => {
       if (fired || file !== 'l1.drawio') return;
       fired = true;
@@ -149,7 +150,7 @@ test('a fitted PDF the report does not vouch for is not merged', pdfTest, (t) =>
   // Another valid PDF: mupdf would merge it happily, and the reviewer would get a page its sheets do not
   // explain. The report now carries the hash of every written fitted PDF; pack checks the bytes.
   writeFileSync(fitted, buildPdf({ pages: [{ widthMm: 400, heightMm: 277, lines: [{ x: 50, y: 60, size: 9 }] }] }));
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 2, out);
   assert.ok(!out.includes('ИТОГ: PASS'), out);
@@ -164,7 +165,7 @@ test('a rebuild keeps Visio and leaves no build temp beside the packet', pdfTest
   const packDir = packetDirOf(dir);
   mkdirSync(join(packDir, 'Visio'));
   writeFileSync(join(packDir, 'Visio', 'l1.vsdx'), 'visio');
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   assert.ok(existsSync(join(packDir, 'Visio', 'l1.vsdx')), 'the person' + "'" + 's Visio copy rides through');
   assert.deepEqual(ownBuilds(packDir), [], 'no temp build folder is left next to the packet');
 });
@@ -193,7 +194,7 @@ test('a regular file at the sheet directory path survives a refused rebuild', pd
   rmSync(occupied, { recursive: true });
   writeFileSync(occupied, 'preserve this file');
   const before = readdirSync(pack);
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   assert.notEqual(result.code, 0, result.lines.join('\n'));
   assert.ok(result.lines.join('\n').includes(occupied), result.lines.join('\n'));
   assert.deepEqual(readdirSync(pack), before);
@@ -209,7 +210,7 @@ test('invalid pack-build names stop cleanup before deleting old outputs', pdfTes
   // Simulate an invalid edited build index. The target is an expendable fixture.
   for (const name of ['../../' + basename(dir) + '/keep.txt', outside, 'sub\\keep.drawio']) {
     writeFileSync(join(pdfDir(dir), 'pack-build.json'), JSON.stringify({ merged: MERGED_PDF, sheets: [name] }));
-    const result = runPack(dir);
+    const result = runPack(dir, { withLetter: true });
     assert.notEqual(result.code, 0, result.lines.join('\n'));
     assert.match(result.lines.join('\n'), /pack-build\.json/u);
     assert.equal(readFileSync(outside, 'utf8'), 'keep');

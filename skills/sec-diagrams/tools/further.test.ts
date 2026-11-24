@@ -73,7 +73,7 @@ async function collectPackageSteps(pkg: string, dir: string, collect: (result: C
   assert.equal(pdf.code, 0, pdf.lines.join('\n'));
   collect(pdf);
   writeFileSync(join(pkg, 'записка.txt'), LETTER);
-  const packed = runCli(['pack', pkg]);
+  const packed = runCli(['pack', pkg, '--with-letter']);
   assert.equal(packed.code, 0, packed.lines.join('\n'));
   collect(packed);
 
@@ -125,7 +125,7 @@ test('every Дальше: line is one clean command and survives an interactive 
   collect(runCli(['init', pkg]));
   collect(runCli(['check', pkg]));
   collect(runCli(['pdf', pkg]));
-  collect(runCli(['pack', pkg]));
+  collect(runCli(['pack', pkg, '--with-letter']));
 
   const bad = tempDir('sd-further-rules-');
   t.after(() => rmDir(bad));

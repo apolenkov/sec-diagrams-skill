@@ -119,12 +119,14 @@ test('every Дальше line parses in zsh unchanged, a folder with ! included'
   assert.ok(refused?.lines.some((line) => line.includes(resolve(dir))) === true, show(refused?.lines ?? []));
 });
 
-test('pack usage recovery keeps --with-rules', t => {
+test('pack rejects an unknown flag and keeps both known flags in its retry', t => {
   const dir = tempDir('sd-pack-usage-');
   t.after(() => rmDir(dir));
-  const result = runCli(['pack', dir, '--with-rules', '--x']);
+  const result = runCli(['pack', dir, '--with-rules', '--x', '--with-letter']);
   assert.equal(result.code, 64);
-  assert.ok(result.lines.at(-1)?.endsWith("'pack' " + shellQuote(dir) + " '--with-rules'"));
+  assert.ok(result.lines.some(line => line.includes('pack <folder> [--with-letter] [--with-rules]')));
+  assert.equal(result.lines.at(-1), "Дальше: node " + shellQuote(join(import.meta.dirname, 'cli.ts')) +
+    " 'pack' " + shellQuote(dir) + " '--with-letter' '--with-rules'");
 });
 
 test('style set repairs the three SD-L04 keys on one sent edge', t => {

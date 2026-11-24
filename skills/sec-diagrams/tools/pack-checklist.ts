@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { gateCodes, gateWarnings, pdfDir, type PdfReport, type ReportStatus } from './pdf.ts';
 import { openValueLines } from './pack-open.ts';
 import type { Manifest } from './profile.ts';
+import { LETTER_FILE } from './letter.ts';
 
 export const CONTENT_REVIEW_FILES = [
   'rules-author.md',
@@ -62,7 +63,7 @@ export function writeChecklist(
   warnings: string[],
   report: PdfReport,
   packet: PacketPdf,
-  unreferencedLinks: string[] = [],
+  { unreferencedLinks = [], withLetter = false }: { unreferencedLinks?: string[]; withLetter?: boolean } = {},
 ): string {
   const advice = [...warnings, ...report.files.flatMap(file => file.pages.flatMap(page =>
     gateWarnings(page.warnings).map(w => `${w} (${file.file} стр ${page.page})`)))];
@@ -73,6 +74,11 @@ export function writeChecklist(
     .join('\n\n');
   const lines = [
     '# Чек-лист ручных проверок пакета для службы ИБ',
+    '',
+    '## Состав пакета',
+    '',
+    '- [ ] Сверьте листы в общем PDF с исходниками в папке `схемы/`.',
+    ...(withLetter ? ['- [ ] Сверьте список вложений в `' + LETTER_FILE + '` с файлами пакета.'] : []),
     '',
     '## Схемы и печать',
     '',

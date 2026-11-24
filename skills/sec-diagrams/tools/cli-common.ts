@@ -18,7 +18,7 @@ export interface CliResult {
 export const USAGE =
   'usage: node cli.ts text get <file> <id> [--page <name>] | text set <file> <id> <text> [--page <name>] | ' +
   'style set <file> <id> <key>=<value> [--page <name>] | fix --safe <folder> | check <folder> [--json] [--submitted] | rules <poc.yaml> [--force] | init <folder> | ' +
-  'final <folder> <copy> | open [--undo] [--page <лист>] <file> <id>... | letter <folder> | pdf <folder> | pack <folder> [--with-rules]';
+  'final <folder> <copy> | open [--undo] [--page <лист>] <file> <id>... | letter <folder> | pdf <folder> | pack <folder> [--with-letter] [--with-rules]';
 
 /** A call error still ends with its next step: the corrected call is right above it in the USAGE. */
 export const HELP_STEP = 'Дальше: ' + nodeCommand(CLI_PATH, 'help');
