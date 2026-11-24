@@ -1,0 +1,5 @@
+schema_version: '1.1'
+name: no-drawio-not-checked
+expected_outcome: Ответ сообщает причину пропуска проверки PDF и шаг для повторения при доступном редакторе.
+context:
+  scaffold_script: place-files.sh

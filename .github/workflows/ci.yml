@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+  test-pdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install PDF engine for tests
+        run: npm install --no-save mupdf@1.28.6
+
+      - name: Test with PDF engine
+        run: npm test
+        env:
+          SEC_DIAGRAMS_REQUIRE_MUPDF: '1'
+
+      - name: Install PDF engine into a user prefix
+        run: npm install --prefix "$RUNNER_TEMP/sec-diagrams" mupdf@1.28.6
+
+      - name: Test with PDF engine from the user prefix
+        run: npm test
+        env:
+          SEC_DIAGRAMS_HOME: ${{ runner.temp }}/sec-diagrams
+          SEC_DIAGRAMS_REQUIRE_MUPDF: '1'

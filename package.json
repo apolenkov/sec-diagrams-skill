@@ -1,0 +1,30 @@
+{
+  "name": "sec-diagrams",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"skills/sec-diagrams/tools/*.test.ts\" \"tests/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json",
+    "skill:zip": "python3 scripts/package-skill.py"
+  },
+  "dependencies": {
+    "saxes": "6.0.0",
+    "yaml": "2.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
+    "npm-package-arg": "13.0.2"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/apolenkov/sec-diagrams-skill",
+  "repository": "https://github.com/apolenkov/sec-diagrams-skill",
+  "author": {
+    "name": "apolenkov"
+  }
+}

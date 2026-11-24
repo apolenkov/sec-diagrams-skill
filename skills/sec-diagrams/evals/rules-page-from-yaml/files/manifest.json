@@ -1,0 +1,12 @@
+{
+  "service": "Служба ИБ",
+  "titlePrefix": "",
+  "final": false,
+  "sheets": [
+    {
+      "file": "Карта сетевой фильтрации.drawio",
+      "level": "",
+      "topic": "Карта сетевой фильтрации"
+    }
+  ]
+}

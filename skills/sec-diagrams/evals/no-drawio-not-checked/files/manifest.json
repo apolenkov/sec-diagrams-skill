@@ -1,0 +1,17 @@
+{
+  "service": "Служба ИБ",
+  "titlePrefix": "",
+  "final": false,
+  "sheets": [
+    {
+      "file": "l1.drawio",
+      "level": "L1",
+      "topic": "Общая схема"
+    },
+    {
+      "file": "l2.drawio",
+      "level": "L2",
+      "topic": "Зоны и узлы"
+    }
+  ]
+}

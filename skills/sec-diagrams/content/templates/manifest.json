@@ -1,0 +1,32 @@
+{
+  "service": "Служба ИБ",
+  "titlePrefix": "",
+  "final": false,
+  "sheets": [
+    {
+      "file": "Карта сетевой фильтрации.drawio",
+      "level": "",
+      "topic": "Карта сетевой фильтрации"
+    },
+    {
+      "file": "l1.drawio",
+      "level": "L1",
+      "topic": "Общая схема"
+    },
+    {
+      "file": "l2.drawio",
+      "level": "L2",
+      "topic": "Зоны и узлы"
+    },
+    {
+      "file": "l3-2.drawio",
+      "level": "L3-2",
+      "topic": "Хранение измерений"
+    },
+    {
+      "file": "l3-1.drawio",
+      "level": "L3-1",
+      "topic": "Прием телеметрии"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "sec-diagrams",
+  "version": "1.1.0",
+  "description": "Проверка сетевых схем draw.io и сверка правил межсетевого экрана",
+  "skills": "./skills/",
+  "license": "MIT",
+  "homepage": "https://github.com/apolenkov/sec-diagrams-skill",
+  "repository": "https://github.com/apolenkov/sec-diagrams-skill",
+  "author": {
+    "name": "apolenkov"
+  }
+}

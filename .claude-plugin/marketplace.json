@@ -1,0 +1,14 @@
+{
+  "name": "sec-tools",
+  "description": "Навыки для подготовки документов по ИБ",
+  "owner": {
+    "name": "apolenkov"
+  },
+  "plugins": [
+    {
+      "name": "sec-diagrams",
+      "source": "./",
+      "description": "Проверка сетевых схем draw.io для службы ИБ"
+    }
+  ]
+}

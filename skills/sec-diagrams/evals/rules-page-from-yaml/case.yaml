@@ -1,0 +1,9 @@
+schema_version: '1.1'
+name: rules-page-from-yaml
+expected_outcome: |
+  Рядом с poc.yaml появился лист draw.io «Карта сетевой фильтрации» с таблицами
+  потоков по парам зон и списком DNS-имен. На листе видны все порты и имена из poc.yaml. Проверка
+  оформления без FAIL, сверка ссылок на L3 помечена NOT_CHECKED. Агент сообщает результат
+  проверки печати на A3 или указывает, почему она пропущена.
+context:
+  scaffold_script: place-files.sh

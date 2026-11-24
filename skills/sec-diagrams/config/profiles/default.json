@@ -1,0 +1,16 @@
+{
+  "name": "default",
+  "edgePalette": [
+    { "color": "#000000", "arrow": false, "meaning": "существующая связь" },
+    { "color": "#237a53", "arrow": true, "meaning": "доступ приложения" },
+    { "color": "#2867a6", "arrow": true, "meaning": "поток между сегментами" },
+    { "color": "#ad3b31", "arrow": true, "meaning": "управление" },
+    { "color": "#754bb0", "arrow": true, "meaning": "поток внутри сегмента" }
+  ],
+  "denyColor": "#64748b",
+  "fonts": ["Arial", "Times New Roman"],
+  "titleTail": "L[123]: [\\s\\S]+|L3, лист \\d+ из \\d+: [\\s\\S]+|Порядок запуска|Размещение ресурсов|Карта сетевой фильтрации(?:, лист \\d+ из \\d+)?",
+  "masks": [],
+  "jumpSize": 12,
+  "legendHeadings": ["Условные обозначения", "Обозначения линий", "Заливка узлов"]
+}

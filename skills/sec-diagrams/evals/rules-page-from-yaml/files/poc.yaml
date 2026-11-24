@@ -1,0 +1,56 @@
+sheet: Карта сетевой фильтрации
+tables:
+  - from: Лаборатория
+    to: Приемники данных
+    rows:
+      - {action: allow, dst: Шлюз 1, src: Измеритель 1, port: '9101', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 2, src: Измеритель 2, port: '9102', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 3, src: Измеритель 3, port: '9103', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 4, src: Измеритель 4, port: '9104', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 5, src: Измеритель 5, port: '9105', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 6, src: Измеритель 6, port: '9106', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 7, src: Измеритель 7, port: '9107', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 8, src: Измеритель 8, port: '9108', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 9, src: Измеритель 9, port: '9109', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 10, src: Измеритель 10, port: '9110', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 11, src: Измеритель 11, port: '9111', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 12, src: Измеритель 12, port: '9112', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 13, src: Измеритель 13, port: '9113', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 14, src: Измеритель 14, port: '9114', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 15, src: Измеритель 15, port: '9115', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 16, src: Измеритель 16, port: '9116', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 17, src: Измеритель 17, port: '9117', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 18, src: Измеритель 18, port: '9118', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 19, src: Измеритель 19, port: '9119', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 20, src: Измеритель 20, port: '9120', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 21, src: Измеритель 21, port: '9121', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 22, src: Измеритель 22, port: '9122', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 23, src: Измеритель 23, port: '9123', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 24, src: Измеритель 24, port: '9124', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 25, src: Измеритель 25, port: '9125', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 26, src: Измеритель 26, port: '9126', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 27, src: Измеритель 27, port: '9127', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 28, src: Измеритель 28, port: '9128', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 29, src: Измеритель 29, port: '9129', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 30, src: Измеритель 30, port: '9130', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 31, src: Измеритель 31, port: '9131', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 32, src: Измеритель 32, port: '9132', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 33, src: Измеритель 33, port: '9133', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 34, src: Измеритель 34, port: '9134', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 35, src: Измеритель 35, port: '9135', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 36, src: Измеритель 36, port: '9136', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 37, src: Измеритель 37, port: '9137', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 38, src: Измеритель 38, port: '9138', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 39, src: Измеритель 39, port: '9139', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 40, src: Измеритель 40, port: '9140', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 41, src: Измеритель 41, port: '9141', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 42, src: Измеритель 42, port: '9142', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 43, src: Измеритель 43, port: '9143', proto: UDP, purpose: Передача показаний}
+      - {action: allow, dst: Шлюз 44, src: Измеритель 44, port: '9144', proto: UDP, purpose: Передача показаний}
+  - from: Тестовая сеть
+    to: Каталог
+    rows:
+      - {action: deny, dst: Каталог, src: Гостевой клиент, port: '23443', proto: TCP, purpose: Доступ извне закрыт}
+whitelist:
+  - {purpose: Внутренний поиск, name: catalog.example.net, requester: Оператор}
+  - {purpose: Публикация выборок, name: samples.example.org, requester: Измеритель}

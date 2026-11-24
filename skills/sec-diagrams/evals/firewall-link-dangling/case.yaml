@@ -1,0 +1,8 @@
+schema_version: '1.1'
+name: firewall-link-dangling
+expected_outcome: |
+  Агент сообщает о FAIL SD-R01 и называет поле tables.0.rows.0.link.
+  Он исправляет ссылку по существующей связи или уточняет номер у владельца.
+  Согласованный лист сохраняет исходные связи и номера.
+context:
+  scaffold_script: place-files.sh

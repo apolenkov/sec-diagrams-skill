@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Проверка сетевых схем'
+  short_description: 'Проверяет сетевые схемы draw.io для службы ИБ'
+  default_prompt: 'Проверь с помощью $sec-diagrams сетевые схемы в этой папке перед согласованием со службой ИБ.'
+policy:
+  allow_implicit_invocation: true

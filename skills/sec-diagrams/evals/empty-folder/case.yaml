@@ -1,0 +1,3 @@
+schema_version: '1.1'
+name: empty-folder
+expected_outcome: Агент объясняет, почему проверка пуста, и спрашивает, где лежат исходные схемы.

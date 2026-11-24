@@ -1,0 +1,29 @@
+# Пример для команды rules.
+sheet: "Карта сетевой фильтрации"
+tables:
+  - from: "Датчики"
+    to: "Прием телеметрии"
+    rows:
+      - action: allow
+        link: "L3-1:1"
+        proto: "TCP"
+        port: "443"
+        dst: "Сборщик"
+        dst_fqdn: "ingest.example.org"
+        src: "Датчик"
+        src_fqdn: "sensor.example.org"
+        purpose: "Передача показаний"
+      - src: "Шлюз датчиков"
+        dst: "Брокер сообщений"
+        src_fqdn: "bridge.example.org"
+        dst_fqdn: "broker.example.org"
+        link: "L3-1:2"
+        port: "8883"
+        proto: "TCP"
+        purpose: "Передача событий датчиков"
+whitelist:
+  - purpose: "Запрос метрик"
+    name: "broker.example.org"
+    requester: "Монитор"
+notes:
+  - "Проверьте адреса узлов по конфигурации фильтра."

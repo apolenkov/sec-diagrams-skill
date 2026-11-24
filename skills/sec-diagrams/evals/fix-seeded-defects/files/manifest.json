@@ -1,0 +1,12 @@
+{
+  "service": "Служба ИБ",
+  "titlePrefix": "",
+  "final": false,
+  "sheets": [
+    {
+      "file": "l3-1.drawio",
+      "level": "L3-1",
+      "topic": "Прием телеметрии"
+    }
+  ]
+}

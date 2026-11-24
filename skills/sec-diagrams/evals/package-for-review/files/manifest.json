@@ -1,0 +1,22 @@
+{
+  "service": "Проверка телеметрии",
+  "titlePrefix": "",
+  "final": false,
+  "sheets": [
+    {
+      "file": "l1.drawio",
+      "level": "L1",
+      "topic": "Контур измерений"
+    },
+    {
+      "file": "l3-1.drawio",
+      "level": "L3-1",
+      "topic": "Входящие потоки"
+    },
+    {
+      "file": "Карта сетевой фильтрации.drawio",
+      "level": "",
+      "topic": "Карта сетевой фильтрации"
+    }
+  ]
+}
