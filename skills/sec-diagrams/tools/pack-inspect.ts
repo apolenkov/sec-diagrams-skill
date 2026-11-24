@@ -11,13 +11,11 @@ import { runCheck } from './check.ts';
 import { LETTER_FILE, checkLetter, letterIssueLine, letterSkeleton } from './letter.ts';
 import { loadPdfReport, sha256, worstStatus, type PdfReport } from './pdf.ts';
 import { isRulesSheet, packageFileName, resolveDirectoryName, type Manifest } from './profile.ts';
-import { nodeCommand, shellQuote } from './shell.ts';
+import { shellQuote } from './shell.ts';
 import { SHEETS_DIR, MERGED_RE, VISIO_DIR, packetDirOf } from './pack-names.ts';
 import { COPY_MARKER } from './values-guard.ts';
 import { PacketCleanupError, validatePacketDirectories } from './pack-build.ts';
 import type { PackResult } from './pack.ts';
-
-const CLI_PATH = join(import.meta.dirname, 'cli.ts');
 
 /** Current hash of a sheet, or null when it cannot be read: a deleted sheet is stale too. */
 const shaOfFile = (path: string): string | null => {
@@ -134,7 +132,7 @@ export function inspectReport(
 }
 
 /** Return a blocking result for a missing or unfinished cover note. */
-export function inspectLetter(dir: string, masks: readonly string[], command: 'pack' | 'letter' = 'pack'): PackResult | null {
+export function inspectLetter(dir: string, masks: readonly string[], nextStep: string): PackResult | null {
   const path = join(dir, LETTER_FILE);
   if (!existsSync(path)) {
     writeFileSync(path, letterSkeleton());
@@ -142,7 +140,7 @@ export function inspectLetter(dir: string, masks: readonly string[], command: 'p
       code: 1,
       lines: [
         'TODO записка.txt: каркас создан, заполни по references/letter.md',
-        'Дальше: ' + nodeCommand(CLI_PATH, command, dir),
+        nextStep,
       ],
     };
   }
@@ -153,7 +151,7 @@ export function inspectLetter(dir: string, masks: readonly string[], command: 'p
       lines: [
         ...issues.map(letterIssueLine),
         'Исправь записка.txt по references/letter.md: код называет правило, номер - строку.',
-        'Дальше: ' + nodeCommand(CLI_PATH, command, dir),
+        nextStep,
       ],
     };
   }
@@ -172,10 +170,11 @@ function isAllowedVisioFolder(packDir: string, name: string): boolean {
 }
 
 /** What a person left in the packet folder that no run of pack would put there. */
-export function packetForeignNames(dir: string, manifest: Manifest, mergedName: string): string[] {
+export function packetForeignNames(dir: string, manifest: Manifest, mergedName: string, allowLetter: boolean): string[] {
   const packDir = packetDirOf(dir);
   if (!validatePacketDirectories(dir)) return [];
-  const expected = new Set([mergedName, LETTER_FILE, SHEETS_DIR, COPY_MARKER]);
+  const expected = new Set([mergedName, SHEETS_DIR, COPY_MARKER]);
+  if (allowLetter) expected.add(LETTER_FILE);
   const sheets = new Set(manifest.sheets.map((sheet) => packageFileName(sheet)));
   const foreign: string[] = [];
   let entries;
@@ -212,13 +211,13 @@ export function packetForeignNames(dir: string, manifest: Manifest, mergedName: 
   return foreign;
 }
 
-export function foreignStop(dir: string, foreign: string[]): PackResult {
+export function foreignStop(dir: string, foreign: string[], nextStep: string): PackResult {
   return {
     code: 1,
     lines: [
       ...foreign.map((name) => 'FAIL SD-K02 ' + name + ' - чужой файл в каталоге пакета'),
       'Убери лишнее из каталога пакета: навык ничего не удаляет. Лишние файлы: ' + shellQuote(packetDirOf(dir)) + '.',
-      'Дальше: ' + nodeCommand(CLI_PATH, 'pack', dir),
+      nextStep,
     ],
   };
 }

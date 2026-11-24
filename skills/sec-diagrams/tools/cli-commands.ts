@@ -5,7 +5,7 @@
  * [--page <name>]` (a `\n` in the text argument means a line break), `style set <file> <id>
  * <key>=<value> [--page <name>]` (one style key: color, fill, font, dash, arrows, width), `fix --safe <folder>`,
  * `check <folder> [--json]`, `rules <poc.yaml> [--force]`, `init <folder>`, `final <folder> <copy>`, `pdf <folder>`
- * (export through draw.io Desktop, fit A3, gate) and `pack <folder>` (package, letter, checklist).
+ * (export through draw.io Desktop, fit A3, gate) and `pack <folder> [--with-letter] [--with-rules]`.
  * Output is blind: result codes, counts, file and page names and cell ids; a label is printed
  * only by `text get` for the one requested cell. Exit codes: 0 done, 1 check findings,
  * 2 NOT_CHECKED or UNVERIFIED, 64 bad call, 65 SD-E01 or SD-E02, 69 missing runtime dependencies.
@@ -203,13 +203,20 @@ function commandCheck(second: string | undefined, rest: string[]): CliResult {
   return runCheck(second, rest.includes('--json'), rest.includes('--submitted'));
 }
 
-/** Both commands take one folder; pack can include the auxiliary rules sheet. */
+const PACK_FLAGS = ['--with-letter', '--with-rules'];
+
+/** Both commands take one folder; pack can also include a cover note and the rules sheet. */
 function commandFolder(name: 'pdf' | 'pack', second: string | undefined, rest: string[]): CliResult {
-  const withRules = name === 'pack' && rest.length === 1 && rest[0] === '--with-rules';
-  if (second === undefined || isFlag(second) || (rest.length > 0 && !withRules)) return usageError(name + ' takes <folder>');
+  const flags = name === 'pack' ? PACK_FLAGS : [];
+  if (second === undefined || isFlag(second) || new Set(rest).size !== rest.length || rest.some(flag => !flags.includes(flag))) {
+    return usageError(name + ' takes <folder>' + flags.map(flag => ` [${flag}]`).join(''));
+  }
   const kindError = wrongKind(second, 'folder');
   if (kindError !== null) return kindError;
-  return name === 'pdf' ? runPdf(second) : runPack(second, { withRules });
+  return name === 'pdf' ? runPdf(second) : runPack(second, {
+    withLetter: rest.includes('--with-letter'),
+    withRules: rest.includes('--with-rules'),
+  });
 }
 
 /** rules <poc.yaml> [--force]: one YAML, the flag on either side of it. */
@@ -230,7 +237,8 @@ function commandLetter(folder: string | undefined, rest: string[]): CliResult {
   if (kindError !== null) return kindError;
   const dir = resolve(folder);
   try {
-    return inspectLetter(dir, loadProfile().masks, 'letter') ?? { code: 0, lines: ['PASS записка.txt'] };
+    const next = 'Дальше: ' + nodeCommand(CLI_PATH, 'letter', dir);
+    return inspectLetter(dir, loadProfile().masks, next) ?? { code: 0, lines: ['PASS записка.txt'] };
   } catch (error) {
     if (error instanceof ProfileError) return { code: 65, lines: [error.code + ': ' + error.message] };
     throw error;
@@ -329,7 +337,7 @@ export function runCli(args: string[]): CliResult {
       const command = args[0];
       if (dir) next = furtherLine(resolve(dir));
       if (dir && (command === 'pdf' || command === 'pack' || command === 'init')) {
-        const flags = command === 'pack' && args.includes('--with-rules') ? ['--with-rules'] : [];
+        const flags = command === 'pack' ? PACK_FLAGS.filter(flag => args.includes(flag)) : [];
         next = 'Дальше: ' + nodeCommand(CLI_PATH, command, resolve(dir), ...flags);
       } else if (dir && command === 'rules') {
         next = 'Дальше: ' + nodeCommand(CLI_PATH, 'rules', resolve(dir, 'poc.yaml'));

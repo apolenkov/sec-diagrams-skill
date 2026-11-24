@@ -36,7 +36,7 @@ test('pack builds twice with a service name containing forbidden filename charac
   const service = 'Обзор: сеть/датчики?';
   writeFileSync(manifest, readFileSync(manifest, 'utf8').replace('Служба ИБ', service));
   for (let run = 0; run < 2; run++) {
-    const result = runPack(dir);
+    const result = runPack(dir, { withLetter: true });
     assert.equal(result.code, 0, show(result.lines));
   }
   const { merged } = JSON.parse(readFileSync(join(pdfDir(dir), 'pack-build.json'), 'utf8'));
@@ -46,10 +46,10 @@ test('pack builds twice with a service name containing forbidden filename charac
 
 test('a refusal writes nothing: the packet keeps neither the old merge nor the old sheet copies', pdfTest, (t) => {
   const dir = ready(t, 'sd-pack-refuse-');
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   const pack = packetDirOf(dir);
   writeFileSync(join(dir, 'l1.drawio'), readFileSync(join(dir, 'l1.drawio'), 'utf8') + '<!-- правка -->\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = show(result.lines);
   assert.equal(result.code, 2, out);
   assert.ok(out.includes('PDF устарел: l1.drawio'), out);
@@ -69,10 +69,10 @@ test('a merge from an older composition is removed when pack builds, not left as
   const dir = ready(t, 'sd-pack-oldmerge-');
   const pack = packetDirOf(dir);
   writeFileSync(join(pack, 'keep.txt') && join(dir, 'записка.txt'), LETTER);
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   assert.equal(result.code, 0, show(result.lines));
   writeFileSync(join(pack, mergedPdfName('Служба ИБ', 9)), 'старая склейка');
-  const second = runPack(dir);
+  const second = runPack(dir, { withLetter: true });
   assert.equal(second.code, 0, show(second.lines));
   assert.equal(existsSync(join(pack, mergedPdfName('Служба ИБ', 9))), false, 'the older merge is removed');
   assert.ok(existsSync(join(pack, mergedPdfName('Служба ИБ', 4))), 'the current merge stands');
@@ -82,7 +82,7 @@ test('pack leaves unrelated files beside the PDF report alone', pdfTest, (t) => 
   const dir = ready(t, 'sd-pack-report-notes-');
   const notes = join(pdfDir(dir), 'заметки.pdf');
   writeFileSync(notes, 'личные заметки');
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   assert.equal(readFileSync(notes, 'utf8'), 'личные заметки');
 });
 
@@ -97,7 +97,7 @@ test('a pdf-report without the manifest sheets refuses pack before anything is c
     if (saved === undefined) delete process.env['SD_DRAWIO'];
     else process.env['SD_DRAWIO'] = saved;
   }
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = show(result.lines);
   assert.equal(result.code, 2, out);
   assert.ok(out.includes('PDF не строен по листу: l1.drawio'), out);
@@ -129,9 +129,9 @@ test('the manifest sheet name in NFD still matches the NFC report: no false PDF-
   writeFileSync(path, JSON.stringify(manifest, null, 2) + '\n');
   assert.equal(runPdf(dir, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(dir, 'записка.txt'), LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   assert.equal(existsSync(join(packetDirOf(dir), 'схемы', nfc)), false);
-  const result = runPack(dir, { withRules: true });
+  const result = runPack(dir, { withLetter: true, withRules: true });
   const out = show(result.lines);
   assert.equal(result.code, 0, out);
   assert.ok(existsSync(join(packetDirOf(dir), 'схемы', nfc)), 'the packed sheet keeps the manifest name');

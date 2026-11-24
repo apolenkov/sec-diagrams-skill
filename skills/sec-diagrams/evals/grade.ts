@@ -3,13 +3,13 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { join, resolve } from 'node:path';
 import { parseDrawio, styleValue } from '../tools/drawio.ts';
-import { packageFileName, loadManifest, loadProfile } from '../tools/profile.ts';
+import { isRulesSheet, packageFileName, loadManifest, loadProfile } from '../tools/profile.ts';
 import { loadPoc } from '../tools/rules-page-schema.ts';
 import { RULES_SHEET_FILE, renderSheet } from '../tools/rules-page.ts';
 import { boxCentre, polylineDistance } from '../tools/checks/geometry.ts';
 import { buildModel } from '../tools/checks/model.ts';
 import { labelText } from '../tools/label.ts';
-import { LETTER_FILE, checkLetter } from '../tools/letter.ts';
+import { LETTER_FILE } from '../tools/letter.ts';
 import { SHEETS_DIR, mergedPdfName, packetDirOf } from '../tools/pack-names.ts';
 import { COPY_MARKER } from '../tools/values-guard.ts';
 
@@ -125,20 +125,21 @@ function firewallLink() {
 function packet() {
   const packet = packetDirOf(dir);
   const manifest = loadManifest(original);
-  const included = manifest.sheets;
+  const included = manifest.sheets.filter(sheet => !isRulesSheet(sheet));
   const draw = join(packet, SHEETS_DIR);
   const names = existsSync(draw) ? readdirSync(draw).map(n => n.normalize('NFC')).sort() : [];
   const title = mergedPdfName(manifest.service, included.length);
   const expected = included.map(packageFileName).sort();
-  const letterFile = join(packet, LETTER_FILE);
-  const letter = existsSync(letterFile) ? read(letterFile) : '';
+  const note = join(dir, LETTER_FILE);
   const entries = existsSync(packet) ? readdirSync(packet).filter(n => n !== COPY_MARKER).sort() : [];
-  score(1, isDeepStrictEqual(entries, [SHEETS_DIR, title, LETTER_FILE].sort()) && isDeepStrictEqual(names, expected));
-  score(2, names.includes(RULES_SHEET_FILE) &&
-    names.filter(n => /__L(?:[12]|3(?:-\d+)?)\.drawio$/u.test(n)).length === names.length - 1);
-  score(3, letter.trim().length > 0 && checkLetter(letter, []).length === 0);
+  score(1, isDeepStrictEqual(entries, [SHEETS_DIR, title].sort()) && isDeepStrictEqual(names, expected));
+  score(2, names.length === included.length && names.every(n => /.+__L(?:[12]|3(?:-\d+)?)\.drawio$/u.test(n)));
+  score(3, !existsSync(join(packet, LETTER_FILE)) && existsSync(note) &&
+    readFileSync(note).equals(readFileSync(join(original, LETTER_FILE))));
   const path = dir + '-pdf/чек-лист.md';
-  score(5, existsSync(path) && /NIST SP 800-41 Rev\. 1, §/u.test(read(path)) && /RFC 3022, §/u.test(read(path)));
+  const checklist = existsSync(path) ? read(path) : '';
+  score(5, checklist.includes('## Состав пакета') && !checklist.includes(LETTER_FILE) &&
+    /NIST SP 800-41 Rev\. 1, §/u.test(checklist) && /RFC 3022, §/u.test(checklist));
   score(7, isDeepStrictEqual(names, expected) && included.every(sheet =>
     readFileSync(join(draw, packageFileName(sheet))).equals(readFileSync(join(original, sheet.file)))));
 }

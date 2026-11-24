@@ -7,7 +7,7 @@ import { test, type TestContext } from 'node:test';
 
 import { runCli } from './cli.ts';
 import { l3 } from './checks.test/support.ts';
-import { fakePdf, GOOD_LETTER, readyPackage, rmDir, tempDir } from './pack-fixtures.ts';
+import { fakePdf, readyPackage, rmDir, tempDir } from './pack-fixtures.ts';
 import { packetDirOf, runPack } from './pack.ts';
 import { fittedPdfName, pdfDir, pdfReportPath, runPdf } from './pdf.ts';
 import { resolveDirectoryName } from './profile.ts';
@@ -59,7 +59,6 @@ test('check, pack --with-rules and pdf reject two canonically equivalent sheet n
   const dir = readyPackage(t, 'sd-unicode-sheets-');
   const name = RULES_SHEET_FILE;
   const report = readFileSync(pdfReportPath(dir));
-  writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   withAlternate(t, dir, name, () => {
     let exports = 0;
     for (const result of [

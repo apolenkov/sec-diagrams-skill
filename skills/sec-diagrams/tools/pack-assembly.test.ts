@@ -4,12 +4,14 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFile
 import { join } from 'node:path';
 import { test } from 'node:test';
 
+import { runCli } from './cli.ts';
 import { GOOD_LETTER, MERGED_PDF, PACKET_NAMES, readyPackage, rmDir, tempDir } from './pack-fixtures.ts';
-import { packetDirOf, runPack } from './pack.ts';
+import { mergedPdfName, packetDirOf, runPack } from './pack.ts';
 import { openPdfDocument } from './pdf-gate.ts';
 import { pdfDir } from './pdf.ts';
 import { writeChecklist } from './pack-checklist.ts';
 import { ProfileError, loadManifest } from './profile.ts';
+import { RULES_SHEET_FILE } from './rules-page.ts';
 import { initFolder } from './templates.ts';
 
 const SHEET_TO_PACKET: ReadonlyArray<readonly [string, string]> = [
@@ -68,10 +70,24 @@ test('sheet names stored decomposed still match the NFC manifest (SD-K01)', pdfT
   assert.ok(existsSync(join(packDir, 'схемы', nfc)), 'the packed sheet keeps the manifest name');
 });
 
-test('pack assembles four renamed sheets, the letter, the merged PDF and the checklist', pdfTest, (t) => {
+test('pack assembles a merged PDF and editable sheets without creating a note', pdfTest, (t) => {
+  const dir = readyPackage(t, 'sd-pack-default-');
+  const result = runCli(['pack', dir]);
+  const out = result.lines.join('\n');
+  assert.equal(result.code, 0, out);
+  const packet = packetDirOf(dir);
+  assert.deepEqual(lettersOf(packet), ['схемы', MERGED_PDF].sort());
+  assert.deepEqual(lettersOf(join(packet, 'схемы')), PACKET_NAMES);
+  assert.equal(openPdfDocument(readFileSync(join(packet, MERGED_PDF)))?.countPages(), PACKET_NAMES.length);
+  assert.ok(!existsSync(join(dir, 'записка.txt')));
+  assert.doesNotMatch(out, /записка\.txt/u);
+  assert.doesNotMatch(readFileSync(join(pdfDir(dir), 'чек-лист.md'), 'utf8'), /записка\.txt/u);
+});
+
+test('pack --with-letter assembles four renamed sheets, the letter, the merged PDF and the checklist', pdfTest, (t) => {
   const dir = readyPackage(t);
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  const result = runPack(dir);
+  const result = runCli(['pack', dir, '--with-letter']);
   const out = result.lines.join('\n');
   assert.equal(result.code, 0, out);
   const packDir = packetDirOf(dir);
@@ -93,6 +109,7 @@ test('pack assembles four renamed sheets, the letter, the merged PDF and the che
   );
   assert.ok(existsSync(join(packDir, MERGED_PDF)), 'the merged PDF lives inside the packet');
   const checklist = readFileSync(join(pdfDir(dir), 'чек-лист.md'), 'utf8');
+  assert.match(checklist, /записка\.txt/u);
   for (const source of ['NIST SP 800-41 Rev. 1, § 5.2.2', 'RFC 3022, § 3.1', 'RFC 8446, § 2', 'Crop and Fit to page']) {
     assert.ok(checklist.includes(source), source);
   }
@@ -103,12 +120,46 @@ test('pack assembles four renamed sheets, the letter, the merged PDF and the che
   assert.equal(result.lines.at(-1), 'Человеку: пройди чек-лист глазами');
 });
 
+test('pack combines both flags in either order and can rebuild a legacy packet without the extras', pdfTest, (t) => {
+  const dir = readyPackage(t, 'sd-pack-both-');
+  writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
+  const packet = packetDirOf(dir);
+  const names = [...PACKET_NAMES, RULES_SHEET_FILE].sort();
+  const merged = mergedPdfName('Служба ИБ', names.length);
+  for (const flags of [['--with-rules', '--with-letter'], ['--with-letter', '--with-rules']]) {
+    const result = runCli(['pack', dir, ...flags]);
+    assert.equal(result.code, 0, result.lines.join('\n'));
+    assert.deepEqual(lettersOf(packet), ['схемы', merged, 'записка.txt'].sort());
+    assert.deepEqual(lettersOf(join(packet, 'схемы')), names);
+    assert.equal(openPdfDocument(readFileSync(join(packet, merged)))?.countPages(), names.length);
+  }
+  const buildList = join(pdfDir(dir), 'pack-build.json');
+  writeFileSync(buildList, JSON.stringify({ merged, sheets: names }));
+  const result = runCli(['pack', dir]);
+  assert.equal(result.code, 0, result.lines.join('\n'));
+  assert.deepEqual(lettersOf(packet), ['схемы', MERGED_PDF].sort());
+  assert.deepEqual(lettersOf(join(packet, 'схемы')), PACKET_NAMES);
+  assert.equal(readFileSync(join(dir, 'записка.txt'), 'utf8'), GOOD_LETTER);
+});
+
+test('pack protects a note added by hand to a packet built without a note', pdfTest, (t) => {
+  const dir = readyPackage(t, 'sd-pack-foreign-letter-');
+  assert.equal(runCli(['pack', dir]).code, 0);
+  const letter = join(packetDirOf(dir), 'записка.txt');
+  writeFileSync(letter, GOOD_LETTER);
+  const result = runCli(['pack', dir]);
+  assert.equal(result.code, 1, result.lines.join('\n'));
+  assert.match(result.lines.join('\n'), /FAIL SD-K02 записка\.txt/u);
+  assert.equal(readFileSync(letter, 'utf8'), GOOD_LETTER);
+  assert.ok(!existsSync(join(dir, 'записка.txt')));
+});
+
 test('a foreign file in the packet directory is SD-K02 and nothing is written', pdfTest, (t) => {
   const dir = readyPackage(t, 'sd-pack-foreign-');
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   mkdirSync(packetDirOf(dir));
   writeFileSync(join(packetDirOf(dir), 'чужой.txt'), 'не трогать\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 1, out);
   assert.ok(out.includes('FAIL SD-K02 чужой.txt'), out);
@@ -121,7 +172,7 @@ test('a Visio subfolder of .vsdx copies is not a foreign file', pdfTest, (t) => 
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   mkdirSync(join(packetDirOf(dir), 'Visio'), { recursive: true });
   writeFileSync(join(packetDirOf(dir), 'Visio', 'L1.vsdx'), 'fake vsdx\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 0, out);
   assert.deepEqual(lettersOf(packetDirOf(dir)), [...PACKET_TOP, 'Visio'].sort());
@@ -133,7 +184,7 @@ test('a non-vsdx file inside the Visio subfolder is SD-K02', pdfTest, (t) => {
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   mkdirSync(join(packetDirOf(dir), 'Visio'), { recursive: true });
   writeFileSync(join(packetDirOf(dir), 'Visio', 'записка.txt'), 'не vsdx\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 1, out);
   assert.ok(out.includes('FAIL SD-K02 Visio'), out);
@@ -143,11 +194,11 @@ test('a repeated pack rebuilds the same packet and the merged PDF keeps its page
   // The merge is rebuilt from the fitted sheets every run, never appended to itself.
   const dir = readyPackage(t, 'sd-pack-twice-');
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   const merged = join(packetDirOf(dir), MERGED_PDF);
   const document = openPdfDocument(readFileSync(merged));
   assert.equal(document?.countPages(), 4);
-  assert.equal(runPack(dir).code, 0, 'the second pack runs clean');
+  assert.equal(runPack(dir, { withLetter: true }).code, 0, 'the second pack runs clean');
   const again = openPdfDocument(readFileSync(merged));
   assert.equal(again?.countPages(), 4, 'a second pack never grows the merge');
   assert.deepEqual(lettersOf(packetDirOf(dir)), PACKET_TOP);
@@ -176,7 +227,7 @@ test('a manifest that packs two sheets under one name fails SD-E02 before any wr
     'the clash is a manifest error, not a silent overwrite',
   );
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   assert.equal(result.code, 65, result.lines.join('\n'));
   assert.ok(!existsSync(packetDirOf(dir)), 'SD-E02 stops before any write');
 });
@@ -184,9 +235,9 @@ test('a manifest that packs two sheets under one name fails SD-E02 before any wr
 test('a foreign file inside draw.io is SD-K02 too', pdfTest, (t) => {
   const dir = readyPackage(t, 'sd-pack-subforeign-');
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   writeFileSync(join(packetDirOf(dir), 'схемы', 'черновик.txt'), 'руками\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 1, out);
   assert.ok(out.includes('FAIL SD-K02'), out);

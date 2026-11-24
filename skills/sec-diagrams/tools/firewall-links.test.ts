@@ -54,7 +54,6 @@ test('a number on a sheet with an unreadable legend needs manual verification', 
 test('pack switches both the PDF and its editable sheets and lists unreferenced links outside the packet', pdfTest, t => {
   const dir = readyPackage(t);
   const packet = dir + '-обзор';
-  writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   for (const withRules of [false, true, false]) {
     const result = runCli(['pack', dir, ...(withRules ? ['--with-rules'] : [])]);
     assert.equal(result.code, 0, result.lines.join('\n'));
@@ -244,7 +243,7 @@ test('the manual checklist includes YAML field paths for unverified links', pdfT
   writeFileSync(sheet, readFileSync(sheet, 'utf8').replaceAll('sdRole=legend', 'sdRole=other').replaceAll('Легенда', 'Образцы'));
   assert.equal(runPdf(dir, { exportSheet: (_source, target) => fakePdf(target) }).code, 0);
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  const result = runCli(['pack', dir]);
+  const result = runCli(['pack', dir, '--with-letter']);
   assert.equal(result.code, 2, result.lines.join('\n'));
   const checklist = readFileSync(join(dir + '-pdf', 'чек-лист.md'), 'utf8');
   assert.match(checklist, /poc\.yaml.*SD-R01.*tables\.0\.rows\.0\.link/u);

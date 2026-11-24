@@ -35,7 +35,7 @@ test('the packet of a sending copy is a sending copy; the packet of a working co
   const copy = sendingCopyOfPackage(t, dir, 'sd-guard-packet-to');
   assert.equal(runPdf(copy, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(copy, 'записка.txt'), LETTER);
-  const packed = runPack(copy);
+  const packed = runPack(copy, { withLetter: true });
   assert.equal(packed.code, 0, show(packed.lines));
   const packet = packetDirOf(copy);
   assert.ok(existsSync(join(packet, COPY_MARKER)), 'pack leaves the copy marker in the packet');
@@ -53,7 +53,7 @@ test('the packet of a sending copy is a sending copy; the packet of a working co
   // The same run over the working copy marks nothing: its packet is not a sending copy.
   assert.equal(runPdf(dir, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(dir, 'записка.txt'), LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   assert.ok(!existsSync(join(packetDirOf(dir), COPY_MARKER)), 'a working packet carries no marker');
   const workingPacketGet = runCli([
     'text',

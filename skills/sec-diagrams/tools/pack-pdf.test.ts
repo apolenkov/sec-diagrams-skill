@@ -42,7 +42,7 @@ test('pack accepts author warnings and still rejects a two-way arrow', pdfTest, 
     else fakePdf(out);
   } });
   assert.equal(pdf.code, 0);
-  const pack = runPack(dir);
+  const pack = runPack(dir, { withLetter: true });
   assert.equal(pack.code, 0, pack.lines.join('\n'));
   for (const code of ['SD-L01', 'SD-L02', 'SD-P02']) {
     assert.ok(pack.lines.some(line => line.startsWith('WARN ' + code) && line.includes('рекомендация по оформлению')));
@@ -50,7 +50,7 @@ test('pack accepts author warnings and still rejects a two-way arrow', pdfTest, 
   assert.ok(pack.lines.some(line => line.includes('WARN SD-P03 - рекомендация по оформлению')));
   assert.ok(existsSync(join(packetDirOf(dir), 'записка.txt')));
   writeFileSync(sheet, changed.replace('dashed=1;', 'startArrow=classic;dashed=1;'));
-  const blocked = runPack(dir);
+  const blocked = runPack(dir, { withLetter: true });
   assert.equal(blocked.code, 1);
   assert.ok(blocked.lines.some(line => line.startsWith('FAIL SD-L05')));
 });
@@ -59,7 +59,7 @@ test('a sheet edited after pdf is stale: exit 2, the packet is not assembled', p
   const dir = readyPackage(t, 'sd-pack-stale-');
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   writeFileSync(join(dir, 'l1.drawio'), readFileSync(join(dir, 'l1.drawio'), 'utf8') + '<!-- правка -->\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 2, out);
   assert.ok(out.includes('PDF устарел: l1.drawio'), out);
@@ -81,7 +81,7 @@ test('a NOT_CHECKED report assembles nothing: no merge, no packet, exit 2', pdfT
     else process.env['SD_DRAWIO'] = saved;
   }
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 2, out);
   assert.ok(!existsSync(packetDirOf(dir)), 'nothing to merge means no packet');
@@ -104,7 +104,7 @@ test('pack does not merge stale PDFs after a failed re-export: no packet PASS', 
     if (saved === undefined) delete process.env['SD_DRAWIO'];
     else process.env['SD_DRAWIO'] = saved;
   }
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 2, out);
   assert.ok(!out.includes('PASS ' + MERGED_PDF), 'old renders never produce a PASS: ' + out);
@@ -117,7 +117,7 @@ test('a touched sheet is not falsely stale: freshness is the content, not the mt
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
   const future = new Date(Date.now() + 60_000);
   utimesSync(join(dir, 'l1.drawio'), future, future);
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   const out = result.lines.join('\n');
   assert.equal(result.code, 0, out);
   assert.ok(out.includes('PASS ' + MERGED_PDF + ': стр 4'), out);
@@ -127,11 +127,11 @@ test('a stale rerun drops the merged PDF the previous pack left, and keeps the r
   // the reviewer must never find an old merged PDF in the packet of a new round.
   const dir = readyPackage(t, 'sd-pack-drop-');
   writeFileSync(join(dir, 'записка.txt'), GOOD_LETTER);
-  assert.equal(runPack(dir).code, 0);
+  assert.equal(runPack(dir, { withLetter: true }).code, 0);
   const merged = join(packetDirOf(dir), MERGED_PDF);
   assert.ok(existsSync(merged), 'the first pack left the merged file');
   writeFileSync(join(dir, 'l1.drawio'), readFileSync(join(dir, 'l1.drawio'), 'utf8') + '<!-- правка -->\n');
-  const result = runPack(dir);
+  const result = runPack(dir, { withLetter: true });
   assert.equal(result.code, 2, result.lines.join('\n'));
   assert.ok(!existsSync(merged), 'the previous merged PDF is gone');
   assert.ok(existsSync(join(packetDirOf(dir), 'записка.txt')), 'the skill deletes nothing else');

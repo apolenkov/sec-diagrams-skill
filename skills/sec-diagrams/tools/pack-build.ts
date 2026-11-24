@@ -26,7 +26,7 @@ import { LETTER_FILE } from './letter.ts';
 import type { PackDeps } from './pack.ts';
 
 /**
- * Copy the sheets under profile names into схемы/ and the letter as записка.txt -
+ * Copy the sheets under profile names into схемы/ and, when requested, the letter as записка.txt -
  * into the TEMP build folder, which is renamed over the packet whole. Each sheet
  * is read once and the hash is taken from the very bytes that get written: a sheet
  * edited between the report check and this copy stops the build instead of smuggling a packet
@@ -60,7 +60,7 @@ export function copyIntoBuild(
     writeFileSync(join(sheetDir, packageFileName(sheet)), bytes);
     copied += 1;
   }
-  copyFileSync(join(dir, LETTER_FILE), join(build, LETTER_FILE));
+  if (deps.withLetter) copyFileSync(join(dir, LETTER_FILE), join(build, LETTER_FILE));
   return copied;
 }
 
@@ -68,6 +68,7 @@ export function copyIntoBuild(
 interface BuildList {
   merged: string;
   sheets: string[];
+  withLetter: boolean;
 }
 
 const buildListPath = (dir: string): string => join(pdfDir(dir), 'pack-build.json');
@@ -100,11 +101,15 @@ export function loadBuildList(dir: string): BuildList | null {
   if (!MERGED_RE.test(merged) || sheets.some(name => !name.endsWith('.drawio'))) {
     throw new PacketCleanupError('pack-build.json: ожидается имя склейки PDF и имена листов .drawio');
   }
-  return { merged, sheets };
+  if (data.withLetter !== undefined && typeof data.withLetter !== 'boolean') {
+    throw new PacketCleanupError('pack-build.json: поле withLetter должно быть true или false');
+  }
+  // Older versions always included a letter and did not record that fact.
+  return { merged, sheets, withLetter: data.withLetter ?? true };
 }
 
-export function saveBuildList(dir: string, merged: string, sheets: string[]): void {
-  writeFileSync(buildListPath(dir), JSON.stringify({ merged, sheets }, null, 1) + '\n');
+export function saveBuildList(dir: string, build: BuildList): void {
+  writeFileSync(buildListPath(dir), JSON.stringify(build, null, 1) + '\n');
 }
 
 export class PacketCleanupError extends Error {}

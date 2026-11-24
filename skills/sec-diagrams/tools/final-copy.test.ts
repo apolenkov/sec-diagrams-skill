@@ -123,7 +123,7 @@ test('the end to end copy: the road by the hints, values by hand, check clean, p
 
   assert.equal(runPdf(copy, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(copy, 'записка.txt'), LETTER);
-  const packed = runPack(copy);
+  const packed = runPack(copy, { withLetter: true });
   const out = show(packed.lines);
   assert.equal(packed.code, 0, out);
   const checklist = readFileSync(join(pdfDir(copy), 'чек-лист.md'), 'utf8');
@@ -183,7 +183,7 @@ test('pack of a working copy says the review packet is the final copy', pdfTest,
   const dir = workingPackage(t, 'sd-pack-working-');
   assert.equal(runPdf(dir, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(dir, 'записка.txt'), LETTER);
-  const packed = runPack(dir);
+  const packed = runPack(dir, { withLetter: true });
   assert.equal(packed.code, 0, show(packed.lines));
   const checklist = readFileSync(join(pdfDir(dir), 'чек-лист.md'), 'utf8');
   assert.ok(checklist.includes('рабочая копия: на проверку отправляй копию с настоящими значениями (final)'), checklist);
@@ -194,7 +194,7 @@ test('a final copy with nothing open says the letter paragraph goes away', pdfTe
   const copy = sendingCopyOfPackage(t, dir, 'sd-final-empty-to');
   assert.equal(runPdf(copy, { exportSheet: (_source, outPath) => fakePdf(outPath) }).code, 0);
   writeFileSync(join(copy, 'записка.txt'), LETTER);
-  const packed = runPack(copy);
+  const packed = runPack(copy, { withLetter: true });
   assert.equal(packed.code, 0, show(packed.lines));
   const checklist = readFileSync(join(pdfDir(copy), 'чек-лист.md'), 'utf8');
   assert.ok(checklist.includes('открытых значений нет'), checklist);
