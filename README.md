@@ -1,5 +1,7 @@
 # sec-diagrams
 
+[![CI](https://github.com/apolenkov/sec-diagrams-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/apolenkov/sec-diagrams-skill/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/github/license/apolenkov/sec-diagrams-skill)](LICENSE) ![Node.js 24+](https://img.shields.io/badge/node-%E2%89%A524-339933)
+
 Навык для Claude Code и Codex проверяет сетевые схемы draw.io уровней L1, L2 и L3.
 CLI сверяет нумерацию связей, подписи, легенду и правила межсетевого экрана (МЭ) из YAML.
 В комплекте есть пример схемы сбора телеметрии. Команда `pack <копия>` создает папку
